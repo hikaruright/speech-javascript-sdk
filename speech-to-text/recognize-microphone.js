@@ -15,19 +15,19 @@
  */
 
 'use strict';
-var getUserMedia = require('get-user-media-promise');
-var MicrophoneStream = require('microphone-stream');
-var RecognizeStream = require('./recognize-stream.js');
-var L16 = require('./webaudio-l16-stream.js');
-var FormatStream = require('./format-stream.js');
-var assign = require('object.assign/polyfill')();
-var WritableElementStream = require('./writable-element-stream');
-var { Writable } = require('readable-stream');
-var ResultStream = require('./result-stream');
-var SpeakerStream = require('./speaker-stream');
+const getUserMedia = require('get-user-media-promise');
+const MicrophoneStream = require('microphone-stream');
+const RecognizeStream = require('./recognize-stream.js');
+const L16 = require('./webaudio-l16-stream.js');
+const FormatStream = require('./format-stream.js');
+const assign = require('object.assign/polyfill')();
+const WritableElementStream = require('./writable-element-stream');
+const { Writable } = require('readable-stream');
+const ResultStream = require('./result-stream');
+const SpeakerStream = require('./speaker-stream');
 
-var preservedMicStream;
-var bitBucket = new Writable({
+let preservedMicStream;
+const bitBucket = new Writable({
   write: function(chunk, encoding, callback) {
     // when the keepMicrophone option is enabled, unused audio data is sent here so that it isn't buffered by other streams.
     callback();
@@ -54,7 +54,7 @@ var bitBucket = new Writable({
  * @param {Boolean} [options.resultsBySpeaker=false] Pipe results through a SpeakerStream. Forces speaker_labels and objectMode to be true.
  * @param {MediaStream} [options.mediaStream] Optionally pass in an existing MediaStream
  *
- * @return {RecognizeStream|SpeakerStream|FormatStream|ResultStream}
+ * @return {}
  */
 module.exports = function recognizeMicrophone(options) {
   if (!options || (!options.token && !options.accessToken)) {
@@ -82,7 +82,7 @@ module.exports = function recognizeMicrophone(options) {
     options.smartFormatting = options.format;
   }
 
-  var rsOpts = assign(
+  const rsOpts = assign(
     {
       contentType: 'audio/l16;rate=16000',
       interimResults: true
@@ -90,15 +90,15 @@ module.exports = function recognizeMicrophone(options) {
     options
   );
 
-  var recognizeStream = new RecognizeStream(rsOpts);
-  var streams = [recognizeStream]; // collect all of the streams so that we can bundle up errors and send them to the last one
+  const recognizeStream = new RecognizeStream(rsOpts);
+  const streams = [recognizeStream]; // collect all of the streams so that we can bundle up errors and send them to the last one
 
   // set up the output first so that we have a place to emit errors
   // if there's trouble with the input stream
-  var stream = recognizeStream;
+  let stream = recognizeStream;
 
-  var keepMic = options.keepMicrophone;
-  var micStream;
+  const keepMic = options.keepMicrophone;
+  let micStream;
   if (keepMic && preservedMicStream) {
     preservedMicStream.unpipe(bitBucket);
     micStream = preservedMicStream;
@@ -108,7 +108,7 @@ module.exports = function recognizeMicrophone(options) {
       objectMode: true,
       bufferSize: options.bufferSize
     });
-    var pm = options.mediaStream ? Promise.resolve(options.mediaStream) : getUserMedia({ video: false, audio: true });
+    const pm = options.mediaStream ? Promise.resolve(options.mediaStream) : getUserMedia({ video: false, audio: true });
     pm.then(function(mediaStream) {
       micStream.setStream(mediaStream);
       if (keepMic) {
@@ -122,7 +122,7 @@ module.exports = function recognizeMicrophone(options) {
     });
   }
 
-  var l16Stream = new L16({ writableObjectMode: true });
+  const l16Stream = new L16({ writableObjectMode: true });
 
   micStream.pipe(l16Stream).pipe(recognizeStream);
 
