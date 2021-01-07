@@ -118,6 +118,8 @@ module.exports = function recognizeMicrophone(options) {
       stream.emit('error', err);
       if (err.name === 'NotSupportedError') {
         stream.end(); // end the stream
+      } else {
+        console.error(err);
       }
     });
   }
